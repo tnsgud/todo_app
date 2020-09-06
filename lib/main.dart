@@ -97,11 +97,7 @@ class _MainState extends State<Main> {
             ),
           ),
           FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
-          ListView(
-            children: [
-              Text('${text.toString() == null ? '' : text}'),
-            ],
-          )
+          Text('${text.toString() == null ? '' : text}'),
         ],
       ),
     );
