@@ -48,7 +48,7 @@ class Storage {
     final file = await _localFile;
 
     // 파일 쓰기
-    return file.writeAsString('$counter');
+    return file.writeAsString('$counter', mode: FileMode.append);
   }
 }
 
@@ -97,7 +97,11 @@ class _MainState extends State<Main> {
             ),
           ),
           FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
-          Text('${text.toString() == null ? '' : text}'),
+          ListView(
+            children: [
+              Text('${text.toString() == null ? '' : text}'),
+            ],
+          )
         ],
       ),
     );
