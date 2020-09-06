@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -44,11 +43,12 @@ class Storage {
     }
   }
 
-  Future<File> writeCounter(String counter) async {
+  Future<File> writeCounter(String counter, int index) async {
     final file = await _localFile;
 
+    print('$counter $index');
     // 파일 쓰기
-    return file.writeAsString('$counter', mode: FileMode.append);
+    return file.writeAsString('$counter $index', mode: FileMode.append);
   }
 }
 
@@ -59,7 +59,9 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   var txtcontroller = TextEditingController();
-  String text;
+  int index = 0;
+  String writeText;
+  List<String> readText = List<String>(1000);
   Storage storage;
 
   @override
@@ -68,17 +70,18 @@ class _MainState extends State<Main> {
     storage = new Storage();
     storage.readCounter().then((String value) {
       setState(() {
-        text = value;
+        readText[index] = value;
+        index++;
       });
     });
   }
 
   Future<File> _saveString() {
     setState(() {
-      text = txtcontroller.text;
+      writeText = txtcontroller.text;
     });
-    print(text);
-    return storage.writeCounter(text);
+    print(writeText);
+    return storage.writeCounter(writeText, index);
   }
 
   @override
@@ -97,7 +100,7 @@ class _MainState extends State<Main> {
             ),
           ),
           FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
-          Text('${text.toString() == null ? '' : text}'),
+          Text('${readText[0]}'),
         ],
       ),
     );
