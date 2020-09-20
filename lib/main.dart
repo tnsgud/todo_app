@@ -103,10 +103,7 @@ class _MainState extends State<Main> {
               itemBuilder: (context, index) {
                 return Container(
                   child: Row(
-                    children: [
-                      Radio(value: null, groupValue: null, onChanged: null),
-                      Text('$readText')
-                    ],
+                    children: [Icon(Icons.radio), Text('$readText')],
                   ),
                 );
               },
