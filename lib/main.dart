@@ -26,6 +26,7 @@ class Storage {
 
   Future<File> get _localFile async {
     final path = await _localPath;
+    print('$path/counter.txt');
     return File('$path/counter.txt');
   }
 
@@ -71,7 +72,6 @@ class _MainState extends State<Main> {
     storage.readCounter().then((String value) {
       setState(() {
         readText[index] = value;
-        index++;
       });
     });
   }
@@ -80,7 +80,10 @@ class _MainState extends State<Main> {
     setState(() {
       writeText = txtcontroller.text;
     });
-    print(writeText);
+    for (int i = 0; i < readText.length; i++) {
+      print(readText[i]);
+    }
+    index++;
     return storage.writeCounter(writeText, index);
   }
 
@@ -95,14 +98,38 @@ class _MainState extends State<Main> {
       body: Column(
         children: [
           Flexible(
-            child: TextField(
-              controller: txtcontroller,
+            child: ListView.builder(
+              itemCount: readText.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  child: Row(
+                    children: [
+                      Radio(value: null, groupValue: null, onChanged: null),
+                      Text('$readText')
+                    ],
+                  ),
+                );
+              },
             ),
           ),
-          FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
-          Text('${readText[0]}'),
+          Row(
+            children: [
+              Flexible(
+                child: TextField(
+                  controller: txtcontroller,
+                ),
+              ),
+              FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
+            ],
+          ),
         ],
       ),
     );
   }
 }
+
+// abstract class ListItem{
+//   Widget buildTitle(BuildContext context);
+
+//   Widget buildIcon
+// }
