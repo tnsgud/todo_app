@@ -26,7 +26,6 @@ class Storage {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    print('$path/counter.txt');
     return File('$path/counter.txt');
   }
 
@@ -47,9 +46,9 @@ class Storage {
   Future<File> writeCounter(String counter, int index) async {
     final file = await _localFile;
 
-    print('$counter $index');
+    // print('$counter $index');
     // 파일 쓰기
-    return file.writeAsString('$counter $index', mode: FileMode.append);
+    return file.writeAsString('$counter $index,', mode: FileMode.append);
   }
 }
 
@@ -62,7 +61,7 @@ class _MainState extends State<Main> {
   var txtcontroller = TextEditingController();
   int index = 0;
   String writeText;
-  List<String> readText = List<String>(1000);
+  List<String> readText = List<String>(100);
   Storage storage;
 
   @override
@@ -71,7 +70,7 @@ class _MainState extends State<Main> {
     storage = new Storage();
     storage.readCounter().then((String value) {
       setState(() {
-        readText[index] = value;
+        readText[index] = value.split(",").toString();
       });
     });
   }
@@ -101,11 +100,22 @@ class _MainState extends State<Main> {
             child: ListView.builder(
               itemCount: readText.length,
               itemBuilder: (context, index) {
-                return Container(
-                  child: Row(
-                    children: [Icon(Icons.radio), Text('$readText')],
-                  ),
-                );
+                if (index.isOdd) {
+                  return Divider();
+                }
+                if (readText[index].toString() != "null") {
+                  return Container(
+                    child: Row(
+                      children: [
+                        Icon(Icons.radio_button_checked),
+                        Text(
+                          readText[index].toString(),
+                          textScaleFactor: 2.0,
+                        )
+                      ],
+                    ),
+                  );
+                }
               },
             ),
           ),
