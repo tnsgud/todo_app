@@ -8,6 +8,13 @@ void main() {
   runApp(MyApp());
 }
 
+class Todo {
+  bool isDone;
+  String title;
+
+  Todo(this.title);
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,26 +36,32 @@ class Storage {
     return File('$path/counter.txt');
   }
 
-  Future<String> readCounter() async {
+  Future<Todo> readCounter() async {
     try {
       final file = await _localFile;
 
       // 파일 읽기
       String contents = await file.readAsString();
+      Todo todo;
 
-      return contents;
+      todo.title = contents.toString().split(',')[0];
+      todo.isDone = contents.toString().split(',')[1].isEmpty;
+
+      return todo;
     } catch (e) {
-      // 에러가 발생할 경우 0을 반환
-      return "";
+      Todo todo;
+      todo.isDone = false;
+      todo.title = '';
+      return todo;
     }
   }
 
-  Future<File> writeCounter(String counter, int index) async {
+  Future<File> writeCounter(String title, [bool isDone]) async {
     final file = await _localFile;
 
     // print('$counter $index');
     // 파일 쓰기
-    return file.writeAsString('$counter $index,', mode: FileMode.append);
+    return file.writeAsString('$title, $isDone/', mode: FileMode.append);
   }
 }
 
@@ -59,31 +72,59 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   var txtcontroller = TextEditingController();
-  int index = 0;
-  String writeText;
-  List<String> readText = List<String>(100);
+  bool iconChanger = true;
+  int index;
+  List<Todo> items = <Todo>[];
+  // List<String> readText = List<String>(100);
   Storage storage;
+
+  void addTodo(Todo todo) {
+    setState(() {
+      items.add(todo);
+      txtcontroller.text = '';
+      _saveString(Todo(txtcontroller.text));
+    });
+  }
+
+  void deleteTodo(Todo todo) {
+    setState(() {
+      items.remove(todo);
+    });
+  }
+
+  void toggleTodo(Todo todo) {
+    setState(() {
+      todo.isDone = !todo.isDone;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     storage = new Storage();
-    storage.readCounter().then((String value) {
+    storage.readCounter().then((Todo todo) {
       setState(() {
-        readText[index] = value.split(",").toString();
+        items.add(todo);
       });
     });
   }
 
-  Future<File> _saveString() {
-    setState(() {
-      writeText = txtcontroller.text;
-    });
-    for (int i = 0; i < readText.length; i++) {
-      print(readText[i]);
+  Future<File> _saveString(Todo todo) {
+    for (int i = 0; i < items.length; i++) {
+      print(items[i]);
     }
-    index++;
-    return storage.writeCounter(writeText, index);
+    items.add(todo);
+    if (todo.isDone == true) {
+      return storage.writeCounter(todo.title);
+    } else {
+      return storage.writeCounter(todo.title, todo.isDone);
+    }
+  }
+
+  @override
+  void dispose() {
+    txtcontroller.dispose();
+    super.dispose();
   }
 
   @override
@@ -96,27 +137,9 @@ class _MainState extends State<Main> {
       ),
       body: Column(
         children: [
-          Flexible(
-            child: ListView.builder(
-              itemCount: readText.length,
-              itemBuilder: (context, index) {
-                if (index.isOdd) {
-                  return Divider();
-                }
-                if (readText[index].toString() != "null") {
-                  return Container(
-                    child: Row(
-                      children: [
-                        Icon(Icons.radio_button_checked),
-                        Text(
-                          readText[index].toString(),
-                          textScaleFactor: 2.0,
-                        )
-                      ],
-                    ),
-                  );
-                }
-              },
+          Expanded(
+            child: ListView(
+              children: items.map((todo) => bulidItemWidget(todo)).toList(),
             ),
           ),
           Row(
@@ -126,15 +149,47 @@ class _MainState extends State<Main> {
                   controller: txtcontroller,
                 ),
               ),
-              FlatButton(onPressed: _saveString, child: Text('text 저장하기')),
+              FlatButton(
+                  onPressed: () => addTodo(Todo(txtcontroller.text)),
+                  child: Text('text 저장하기')),
             ],
           ),
         ],
       ),
     );
   }
-}
 
+  Widget bulidItemWidget(Todo todo) {
+    return ListTile(
+      leading: Icon(
+        iconChanger ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+        color: Colors.blue,
+      ),
+      onTap: () {
+        setState(() {
+          if (iconChanger == true) {
+            iconChanger = false;
+          } else {
+            iconChanger = true;
+          }
+          toggleTodo(todo);
+        });
+      },
+      title: Text(
+        todo.title,
+        style: todo.isDone
+            ? TextStyle(
+                decoration: TextDecoration.lineThrough,
+                fontStyle: FontStyle.italic)
+            : null,
+      ),
+      trailing: IconButton(
+          color: Colors.blue,
+          icon: Icon(Icons.delete_forever),
+          onPressed: () => deleteTodo(todo)),
+    );
+  }
+}
 // abstract class ListItem{
 //   Widget buildTitle(BuildContext context);
 
