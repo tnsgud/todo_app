@@ -190,8 +190,3 @@ class _MainState extends State<Main> {
     );
   }
 }
-// abstract class ListItem{
-//   Widget buildTitle(BuildContext context);
-
-//   Widget buildIcon
-// }
